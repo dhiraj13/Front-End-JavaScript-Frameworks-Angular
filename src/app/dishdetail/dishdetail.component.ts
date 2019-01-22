@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject } from '@angular/core';
 import { Dish } from '../shared/dish';
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -18,7 +18,7 @@ export class DishdetailComponent implements OnInit {
   dishIds: string[];
   prev: string;
   next: string;
-
+  @ViewChild('cform') feedbackFormDirective;
   commentForm: FormGroup;
   comment: Comment;
 
@@ -31,22 +31,21 @@ export class DishdetailComponent implements OnInit {
     'author': {
       'required':      'Author Name is required.',
       'minlength':     'Author Name must be at least 2 characters long.',
-      'maxlength':     'Author Name cannot be more than 25 characters long.'
     },
     'comment': {
       'required':      'Comment is required.',
-      'minlength':     'Comment must be at least 1 characters long.'
     }
   };
 
   constructor(private dishService: DishService,
     private route: ActivatedRoute,
     private location: Location,
-    private fb:FormBuilder) {
-      this.createForm();
-     }
+    private fb:FormBuilder,
+    @Inject('BaseURL') private BaseURL) { }
 
   ngOnInit() {
+    this.createForm();
+
     this.dishService.getDishIds()
       .subscribe((dishIds) => this.dishIds = dishIds);
     this.route.params
@@ -81,17 +80,20 @@ export class DishdetailComponent implements OnInit {
     if (!this.commentForm) { return; }
     const form = this.commentForm;
     for (const field in this.formErrors) {
-      // clear previous error message (if any)
-      this.formErrors[field] = '';
-      const control = form.get(field);
-      if (control && control.dirty && !control.valid) {
-        const messages = this.validationMessages[field];
-        for (const key in control.errors) {
-          this.formErrors[field] += messages[key] + ' ';
+      if (this.formErrors.hasOwnProperty(field)) {
+        // clear previous error message (if any)
+        this.formErrors[field] = '';
+        const control = form.get(field);
+        if (control && control.dirty && !control.valid) {
+          const messages = this.validationMessages[field];
+          for (const key in control.errors) {
+            if (control.errors.hasOwnProperty(key)) {
+            this.formErrors[field] += messages[key] + ' ';
+            }
+          }
         }
       }
     }
-    this.comment = form.value;
   }
 
   onSubmit() {
@@ -105,5 +107,6 @@ export class DishdetailComponent implements OnInit {
       comment: '',
       rating: 5
     });
+    this.feedbackFormDirective.resetForm();
   }
 }
