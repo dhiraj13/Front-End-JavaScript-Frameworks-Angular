@@ -1,7 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
 import { Feedback, ContactType } from '../shared/feedback';
-import { flyInOut } from '../animations/app.animation';
+import { visibility, flyInOut, expand } from '../animations/app.animation';
+import { FeedbackService } from '../services/feedback.service';
 
 @Component({
   selector: 'app-contact',
@@ -12,15 +14,21 @@ import { flyInOut } from '../animations/app.animation';
     'style': 'display: block;'
   },
   animations: [
-    flyInOut()
+    flyInOut(),
+    expand(),
+    visibility()
   ]
 })
 export class ContactComponent implements OnInit {
 
   feedbackForm: FormGroup;
-  feedback: Feedback;
-  contactType = ContactType;
+  errMess: string;
   @ViewChild('fform') feedbackFormDirective;
+  feedback: Feedback;
+  submittedFeedback: Feedback;
+  contactType = ContactType;
+  loading = false;
+  ErrFeedbackSubmit: String;
 
   formErrors = {
     'firstname': '',
@@ -50,7 +58,8 @@ export class ContactComponent implements OnInit {
     }
   };
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder,
+    private feedbackService: FeedbackService) {
     this.createForm();
    }
 
@@ -95,18 +104,34 @@ export class ContactComponent implements OnInit {
   }
 
   onSubmit() {
+    this.loading = true;
     this.feedback = this.feedbackForm.value;
     console.log(this.feedback);
-    this.feedbackForm.reset({
-      firstname: '',
-      lastname: '',
-      telnum: '',
-      email: '',
-      agree: false,
-      contacttype: 'None',
-      message: ''
-    });
-    this.feedbackFormDirective.resetForm();
+    this.feedbackService.submitFeedback(this.feedback)
+      .subscribe(feedback => {
+            this.loading=false;
+            this.submittedFeedback = feedback;
+
+            setTimeout(() => {
+              this.submittedFeedback = null;
+              this.feedback = null;
+              this.feedbackForm.reset({
+                firstname: '',
+                lastname: '',
+                telnum: '',
+                email: '',
+                agree: false,
+                contacttype: 'None',
+                message: ''
+              });
+            }, 5000);
+
+          },
+          errmess=>{
+            this.feedback=null; 
+            this.ErrFeedbackSubmit=<any>errmess;
+          }
+      );
   }
 
 }
