@@ -33,8 +33,8 @@ I have load my data in the json-serve, which is a simple server to support a RES
     -> Install the json-server globally by typing the following command
        npm install json-server -g
     -> If you're using OSX or Linux, use sudo at the front of the command
-  ii) Configuring the server
-    -> Create a folder named json-server and move to this folder
-    -> Download db.json file
-    -> Create a folder named public inside json-server folder and place any resources within it, it will served by the server.
-    -> In Our case,
+  ii) Download the json-server folder from the below link where I have put my resources from which resources will be fetched. json-           server work as the pseudo server.
+    -> https://drive.google.com/open?id=1o4Uog-V_CMxrNbbfFsm6hWSeIaDp5A-f
+  iii) Go into the json-server and type the command: json-server --watch db.json
+       This command will start json-server and that will complete my project and run smoothly.
+    
